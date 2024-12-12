@@ -39,7 +39,8 @@ enum RESERVED {
     END,
     PUB,
     PRO,
-    NAMES
+    NAMES,
+    EXIT
 };
 
 RESERVED getReservedEnum(const string& tok) {
@@ -48,6 +49,7 @@ RESERVED getReservedEnum(const string& tok) {
     if (tok == "pub") return PUB;
     if (tok == "pro") return PRO;
     if (tok == "names") return NAMES;
+    if (tok == "exit") return EXIT;
     return static_cast<RESERVED>(-1);
 }
 
@@ -83,6 +85,7 @@ int main(int argc, char* argv[]) {
     }
 
     int lineNum = 0;
+    bool exit = false;
     string line, tok;
     string currAccess = "protected";
     ClassDefinition* class_ = nullptr;
@@ -105,19 +108,19 @@ int main(int argc, char* argv[]) {
             ClassDefinition definition;
             if (class_ != nullptr) {
                 cerr << "Err:" << lineNum << ": No Nested Classes" << endl;
-                exit(1);
+                return 1;
             }
             if (!(iss >> cName)) {
                 cerr << "Err:" << lineNum << ": No class name" << endl;
-                exit(1);
+                return 1;
             }
             if (!isIdentifier(cName) || isResWord(cName)) {
                 cerr << "Err:" << lineNum << ": Wrong class name, " << cName << endl;
-                exit(1);
+                return 1;
             }
             if (globNames.has(cName)) {
                 cerr << "Err:" << lineNum << ": Duplicated name " << cName << endl;
-                exit(1);
+                return 1;
             }
             currAccess = "protected";
             classNames = hashSet();
@@ -158,15 +161,15 @@ int main(int argc, char* argv[]) {
             bool cont = false;
             if (!(iss >> pre)) {
                 cerr << "Err:" << lineNum << " prefix names missing" << endl;
-                exit(1);
+                return 1;
             }
             if (!isIdentifier(pre) || isResWord(pre)) {
                 cerr << "Err:" << lineNum << ": Invalid prefix " << pre << endl;
-                exit(1);
+                return 1;
             }
             if (!(iss >> nm)) {
                 cerr << "Err:" << lineNum << ": name needed" << endl;
-                exit(1);
+                return 1;
             }
             if (nm != "-") {
                 names.push_back(nm);
@@ -185,7 +188,7 @@ int main(int argc, char* argv[]) {
             while (cont) {
                 if (!getline(cin, line)) {
                     cerr << "Err:" << lineNum << ": Should not end input after -" << endl;
-                    exit(1);
+                    return 1;
                 }
                 lineNum++;
                 stream.clear();
@@ -204,7 +207,7 @@ int main(int argc, char* argv[]) {
                 const string& identifier = names[i];
                 if (!isIdentifier(identifier) || isResWord(identifier)) {
                     cerr << "Err:" << lineNum << ": Invalid name " << identifier << endl;
-                    exit(1);
+                    return 1;
                 }
             }
             hashSet* hashes = class_ ? &classNames : &globNames;
@@ -213,7 +216,7 @@ int main(int argc, char* argv[]) {
                 string full = pre + "_" + s;
                 if (hashes->has(full)) {
                     cerr << "Err:" << lineNum << ": Duplicated name " << full << endl;
-                    exit(1);
+                    return 1;
                 }
                 hashes->add(full);
             }
@@ -232,6 +235,10 @@ int main(int argc, char* argv[]) {
             }
             break;
         }
+        case EXIT: {
+            exit = true;
+            break;
+        }
         default: {
             string type = tok;
             string next, name_;
@@ -240,7 +247,7 @@ int main(int argc, char* argv[]) {
             bool contin = false;
             if (class_ == nullptr) {
                 cerr << "Err:" << lineNum << ": member outside class" << endl;
-                exit(1);
+                return 1;
             }
 
             tokens.push_back(type);
@@ -253,7 +260,7 @@ int main(int argc, char* argv[]) {
             }
             if (!complete) {
                 cerr << "Err:" << lineNum << ": - is missing" << endl;
-                exit(1);
+                return 1;
             }
             type = "";
             for (int i = 0; i < tokens.size(); ++i) {
@@ -272,7 +279,7 @@ int main(int argc, char* argv[]) {
             while (contin) {
                 if (!getline(cin, line)) {
                     cerr << "Err:" << lineNum << " No input after - allowed" << endl;
-                    exit(1);
+                    return 1;
                 }
                 lineNum++;
                 istringstream lineStream(line);
@@ -290,11 +297,11 @@ int main(int argc, char* argv[]) {
                 const string& n = names_[i];
                 if (!isIdentifier(n) || isResWord(n)) {
                     cerr << "Err:" << lineNum << ": bad name " << n << endl;
-                    exit(1);
+                    return 1;
                 }
                 if (classNames.has(n)) {
                     cerr << "Err:" << lineNum << ": Duplicated member name " << n << endl;
-                    exit(1);
+                    return 1;
                 }
                 classNames.add(n);
             }
@@ -305,6 +312,9 @@ int main(int argc, char* argv[]) {
             memVar.type = type;
             class_->members.push_back(memVar);
         }
+        }
+        if (exit) {
+            break;
         }
     }
 
