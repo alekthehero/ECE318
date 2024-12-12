@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "hash_table.h"
-#include "intersection.h"
+#include "Intersection.h"
 #include "place.h"
 
 int main(int argc, char* argv[]) {
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "Error: Unable to open file: intersections.txt " << std::endl;
         return 1;
     }
-    std::vector<intersection*> intersections;
+    std::vector<Intersection*> intersections;
     while (std::getline(intersection_file, line)) {
         if (line.empty()) {
             continue;
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
         distance = table.remove_white_space(line.substr(20, 7));
         state = table.remove_white_space(line.substr(28, 2));
         city = table.remove_white_space(line.substr(30, 30));
-        intersection* inter = new intersection(std::stod(latatude), std::stod(longitude), std::stod(distance), state,
+        Intersection* inter = new Intersection(std::stod(latatude), std::stod(longitude), std::stod(distance), state,
                                                city);
         intersections.push_back(inter);
     }
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
                 std::cout << "No place found for " << place_name << " in " << state_abbreviation << std::endl;
                 continue;
             }
-            intersection* closest = intersections[result.intersection];
+            Intersection* closest = intersections[result.intersection];
 
             std::cout << "Place: " << result.city << ", " << result.state << ", Pop: " << result.population
                 << ", Area: " << result.area << ", Lat: " << result.latitude << ", Long: " << result.longitude
