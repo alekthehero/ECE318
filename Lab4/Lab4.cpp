@@ -34,6 +34,23 @@ struct typeGroup {
     string type;
 };
 
+enum RESERVED {
+    CLASS,
+    END,
+    PUB,
+    PRO,
+    NAMES
+};
+
+RESERVED getReservedEnum(const string& tok) {
+    if (tok == "class") return CLASS;
+    if (tok == "end") return END;
+    if (tok == "pub") return PUB;
+    if (tok == "pro") return PRO;
+    if (tok == "names") return NAMES;
+    return static_cast<RESERVED>(-1);
+}
+
 const vector<string> RESERVED_WORDS = {"class", "end", "pub", "pro", "names"};
 
 bool isIdentifier(const string& identifier) {
@@ -81,8 +98,9 @@ int main(int argc, char* argv[]) {
         if (!(iss >> tok)) {
             continue;
         }
-        switch (tok) {
-        case "class":
+
+        switch (getReservedEnum(tok)) {
+        case CLASS:
             string cName;
             ClassDefinition definition;
             if (class_ != nullptr) {
@@ -109,28 +127,28 @@ int main(int argc, char* argv[]) {
             classes.push_back(definition);
             class_ = &classes.back();
             break;
-        case "end":
+        case END:
             if (class_ == nullptr) {
                 cerr << "Err:" << lineNum << ": Unmatched end" << endl;
                 return 1;
             }
             class_ = nullptr;
             break;
-        case "pub":
+        case PUB:
             if (class_ == nullptr) {
                 cerr << "Err:" << lineNum << ": outside of class pub" << endl;
                 return 1;
             }
             currAccess = "public";
             break;
-        case "pro":
+        case PRO:
             if (class_ == nullptr) {
                 cerr << "Err:" << lineNum << "outside of class pro" << endl;
                 return 1;
             }
             currAccess = "protected";
             break;
-        case "names":
+        case NAMES:
             string pre, nm, rest, name;
             vector<string> names;
             bool cont = false;
