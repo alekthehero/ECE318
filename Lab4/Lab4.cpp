@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
         }
 
         switch (getReservedEnum(tok)) {
-        case CLASS:
+        case CLASS: {
             string cName;
             ClassDefinition definition;
             if (class_ != nullptr) {
@@ -127,28 +127,32 @@ int main(int argc, char* argv[]) {
             classes.push_back(definition);
             class_ = &classes.back();
             break;
-        case END:
+        }
+        case END: {
             if (class_ == nullptr) {
                 cerr << "Err:" << lineNum << ": Unmatched end" << endl;
                 return 1;
             }
             class_ = nullptr;
             break;
-        case PUB:
+        }
+        case PUB: {
             if (class_ == nullptr) {
                 cerr << "Err:" << lineNum << ": outside of class pub" << endl;
                 return 1;
             }
             currAccess = "public";
             break;
-        case PRO:
+        }
+        case PRO: {
             if (class_ == nullptr) {
                 cerr << "Err:" << lineNum << "outside of class pro" << endl;
                 return 1;
             }
             currAccess = "protected";
             break;
-        case NAMES:
+        }
+        case NAMES: {
             string pre, nm, rest, name;
             vector<string> names;
             bool cont = false;
@@ -227,7 +231,8 @@ int main(int argc, char* argv[]) {
                 constants.push_back(constant);
             }
             break;
-        default:
+        }
+        default: {
             string type = tok;
             string next, name_;
             vector<string> tokens, names_;
@@ -257,12 +262,12 @@ int main(int argc, char* argv[]) {
                 }
                 type += tokens[i];
             }
-            while (iss >> name) {
-                names.push_back(name);
+            while (iss >> name_) {
+                names_.push_back(name_);
             }
-            if (!names.empty() && names.back() == "-") {
+            if (!names_.empty() && names_.back() == "-") {
                 contin = true;
-                names.pop_back();
+                names_.pop_back();
             }
             while (contin) {
                 if (!getline(cin, line)) {
@@ -294,11 +299,12 @@ int main(int argc, char* argv[]) {
                 classNames.add(n);
             }
             MemVar memVar;
-            memVar.names = names;
+            memVar.names = names_;
             memVar.ln = lineNum;
             memVar.access = currAccess;
             memVar.type = type;
             class_->members.push_back(memVar);
+        }
         }
     }
 
